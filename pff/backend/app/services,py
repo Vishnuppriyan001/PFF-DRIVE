@@ -1,0 +1,23 @@
+import requests
+from .models import Pokemon
+from . import db
+
+POKE_API_URL = "https://pokeapi.co/api/v2/pokemon"
+
+def seed_pokemon_data(limit=100):
+    for i in range(1, limit + 1):
+        response = requests.get(f"{POKE_API_URL}/{i}")
+        if response.status_code == 200:
+            data = response.json()
+            pokemon = Pokemon(
+                id=data["id"],
+                name=data["name"],
+                type=data["types"][0]["type"]["name"],
+                image=data["sprites"]["front_default"],
+                height=data["height"],
+                weight=data["weight"],
+                stats={stat["stat"]["name"]: stat["base_stat"] for stat in data["stats"]},
+            )
+            db.session.add(pokemon)
+    db.session.commit()
+
